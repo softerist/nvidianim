@@ -48,7 +48,13 @@ powershell -ExecutionPolicy Bypass -File .\Setup-CursorNvidiaNim.ps1
 - `User\globalStorage\state.vscdb` - sets the base-URL override, registers the models, and stores your key encrypted exactly the way Cursor stores it. Note: Cursor has a **single** custom-endpoint slot, so this replaces any previously configured endpoint/key (e.g. OpenCode Zen).
 - Nothing is installed; Cursor's Tab autocomplete keeps using Cursor's own models - the custom models apply to chat / agent / cmd-K.
 
-**Optional Cursor add-on:** the reasoning-level picker (and Cursor's local-provider UI) for these models is gated behind a hidden feature flag. If you want it, [softerist/cursor](https://github.com/softerist/cursor) hosts `cursor-ade-nvidia-nim-patch.ps1`, which enables that built-in path for this endpoint. It is not required - models work without it, you just don't get the reasoning dropdown.
+**Optional Cursor add-on:** the reasoning-level picker (and Cursor's local-provider UI) for these models is gated behind a hidden feature flag. If you want it, [softerist/cursor](https://github.com/softerist/cursor) hosts `cursor-ade-nvidia-nim-patch.ps1`, which enables that built-in path for this endpoint:
+
+```powershell
+irm https://raw.githubusercontent.com/softerist/cursor/main/cursor-ade-nvidia-nim-patch.ps1 | iex
+```
+
+It is not required - models work without it, you just don't get the reasoning dropdown.
 
 ## Safety
 
