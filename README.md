@@ -48,15 +48,30 @@ powershell -ExecutionPolicy Bypass -File .\Setup-CursorNvidiaNim.ps1
 - `User\globalStorage\state.vscdb` - sets the base-URL override, registers the models, and stores your key encrypted exactly the way Cursor stores it. Note: Cursor has a **single** custom-endpoint slot, so this replaces any previously configured endpoint/key (e.g. OpenCode Zen).
 - Nothing is installed; Cursor's Tab autocomplete keeps using Cursor's own models - the custom models apply to chat / agent / cmd-K.
 
+**Optional Cursor add-on:** the reasoning-level picker (and Cursor's local-provider UI) for these models is gated behind a hidden feature flag. If you want it, [softerist/cursor](https://github.com/softerist/cursor) hosts `cursor-ade-nvidia-nim-patch.ps1`, which enables that built-in path for this endpoint. It is not required - models work without it, you just don't get the reasoning dropdown.
+
 ## Safety
 
 - Timestamped backups are created next to every file before it is modified (`*.before-nvidia-nim-*.bak`).
 - Both scripts verify their changes after writing (ZCode re-parses with auto-rollback; Cursor decrypts the stored key back).
-- Re-running a script updates the existing setup in place (e.g. to change the API key).
+- Re-running a script updates the existing setup in place (e.g. to change the API key) - it never duplicates providers, models, or keys. Keep the most recent backup and delete older ones occasionally (the Cursor one is ~85 MB).
+- The scripts own the entries they manage: manual tweaks inside the `nvidia-nim` provider / model lists are reset to the script's values on the next run.
 - Cursor must be installed for the Cursor script - it reuses Cursor's own bundled Node runtime, so there are no extra dependencies.
+
+## Performance reality check (NVIDIA free tier)
+
+NVIDIA NIM works, but time-to-first-token on large prompts (Cursor/ZCode agent requests are big: long system prompts + many tools) can be slow and varies heavily with time of day. Measured on 2026-09-26 with a realistic agent-sized prompt:
+
+| Model | First token after |
+|---|---|
+| GLM 5.3 Flash | ~17 s |
+| Kimi K3 | ~60 s |
+| GLM 5.3 | ~2 min (cold or warm) |
+| DeepSeek V4.1 Flash | minutes, sometimes no response at all |
+
+Practical guidance: use **GLM 5.3 Flash** (or Kimi K3 with patience) for interactive work, don't give up on a reply before a couple of minutes, and treat DeepSeek-on-NIM as best-effort. Small prompts answer much faster - the delay scales with prompt size and current NVIDIA capacity. If that latency hurts, add a second, faster BYOK endpoint for interactive work and keep NIM for its large context.
 
 ## Notes
 
-- DeepSeek V4.1 Flash can be very slow on its first messages (NVIDIA cold-start); it speeds up afterwards.
-- NVIDIA NIM models "think" by default. ZCode exposes reasoning levels (low/high/max) for these models; Cursor sends no reasoning parameters by default but lets you attach a `reasoning_effort` parameter per model in its model settings.
+- NVIDIA NIM models "think" by default. ZCode exposes reasoning levels (low/high/max) for these models; Cursor sends no reasoning parameters by default but lets you attach a `reasoning_effort` parameter per model in its model settings (or use the optional patch above).
 - Kimi K3 is registered text-only.
